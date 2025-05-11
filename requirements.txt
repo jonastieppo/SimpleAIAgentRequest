@@ -1,2 +1,4 @@
 pillow
 requests
+ollama
+ipykernel
