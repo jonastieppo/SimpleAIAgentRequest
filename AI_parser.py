@@ -102,11 +102,4 @@ Possible function calls are:
     print(function_name)
 
     return function_name
-
-
-returnFunctionCall(
-    list_of_functions=["next","previous"],
-    prompt="Show me the upcoming image."
-)
-#
 # %%

@@ -4,6 +4,8 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import requests
 import io
+from AI_parser import returnFunctionCall # LLM_request is used by returnFunctionCall internally
+from googletrans import Translator, LANGUAGES # Import Translator
 
 class ImageBrowserApp:
     def __init__(self, root):
@@ -18,6 +20,9 @@ class ImageBrowserApp:
 
         # User prompts storage
         self.user_prompts = []
+
+        # Initialize the translator
+        self.translator = Translator()
 
         # --- Central Image Widget ---
         # Create a frame for the image to help with centering and padding
@@ -130,19 +135,48 @@ class ImageBrowserApp:
             self.prev_button.config(state=tk.NORMAL)
         self.next_button.config(state=tk.NORMAL)
 
-    def submit_prompt(self, event=None): # event=None is good practice for event handlers
-        """Handles the submission of text from the prompt_entry widget."""
-        prompt_text = self.prompt_entry.get().strip() # Get text and remove leading/trailing whitespace
-        if prompt_text:
-            self.user_prompts.append(prompt_text)
-            self.prompt_entry.delete(0, tk.END) # Clear the entry field
-            print(f"Prompt submitted: '{prompt_text}'") # For verification
-            print(f"Current prompts array: {self.user_prompts}") # For verification
-        else:
-            # Optionally, you could provide visual feedback for empty submission attempt
-            # For now, it just doesn't add it to the list.
-            print("Empty prompt entered, not stored.")
+    def _translate_to_english(self, text_to_translate: str) -> str:
+        """Translates the given text to English using googletrans."""
+        if not text_to_translate:
+            return ""
+        try:
+            print(f"Attempting to translate: '{text_to_translate}'")
+            # Detect language and translate to English
+            # You can also specify src language if you know it, e.g., translator.translate(text_to_translate, src='pt', dest='en')
+            translation = self.translator.translate(text_to_translate, dest='en')
+            translated_text = translation.text
+            detected_lang = LANGUAGES.get(translation.src, translation.src) # Get full language name
+            print(f"Detected source language: {detected_lang} ('{translation.src}')")
+            print(f"Translated to English: '{translated_text}'")
+            return translated_text
+        except Exception as e:
+            print(f"Error during translation: {e}")
+            messagebox.showerror("Translation Error", f"Could not translate text: {e}")
+            return text_to_translate # Fallback to original text on error
 
+    def submit_prompt(self, event=None):
+        """Handles the submission of text from the prompt_entry widget."""
+        prompt_text = self.prompt_entry.get().strip()
+        if prompt_text:
+            prompt_text_english = self._translate_to_english(prompt_text)
+            function_name = returnFunctionCall(["load_next_image", "load_previous_image"], prompt_text_english)
+
+            self.user_prompts.append(prompt_text) # Store original prompt
+            self.prompt_entry.delete(0, tk.END)
+            print(f"Original prompt: '{prompt_text}', Translated: '{prompt_text_english}', Function: {function_name}")
+            print(f"Current prompts array: {self.user_prompts}")
+
+            # --- Handle the function call based on function_name ---
+            if function_name == "load_next_image":
+                self.load_next_image()
+            elif function_name == "load_previous_image":
+                self.load_previous_image()
+            else:
+                # Optionally, provide feedback if the function_name is not recognized
+                # or if no specific action is tied to it yet.
+                print(f"No specific action defined for function: {function_name}")
+        else:
+            print("Empty prompt entered, not stored.")
 
 if __name__ == "__main__":
     main_window = tk.Tk()
