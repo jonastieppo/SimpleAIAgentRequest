@@ -147,5 +147,4 @@ Desired JSON Output:
 
     return function_name
 # %%
-translate_to_english("Mostre-me a figura que eu estava olhando antes dessa.")
 # %%)
