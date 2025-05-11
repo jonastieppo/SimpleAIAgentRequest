@@ -29,7 +29,41 @@ def LLM_request(prompt):
     except Exception as e:
         print(f"Ocorreu um erro inesperado: {e}")
 
-def parse_function_name(llm_response_str: str):
+def translate_to_english(text_to_translate: str) -> str:
+    """
+    Translate the user text to english, using the LLMs.
+    """
+    suitable_prompt = fr'''
+You are an intelligent assistant that helps a user by translating the user input to english. The source language is portuguese.
+Your ONLY output MUST be a single, valid JSON object. Do NOT include any other text, explanations, apologies, or introductory phrases before or after the JSON object.
+
+The JSON object must have exactly one key: "translation".
+
+The user text to translate is:
+
+{text_to_translate}
+
+---
+Here are some examples of user prompts and the corresponding desired JSON output:
+
+User Prompt: "Mostre-me a figura que eu estava olhando antes dessa."
+Desired JSON Output:
+```json
+{{
+    "translation":": "Show me the picture I was looking at before this one."
+}}
+'''
+
+    LLM_response = LLM_request(suitable_prompt)
+
+    ## parsing translation
+
+    translation = parse_json(LLM_response, "translation")
+    print(translation)
+
+    return translation
+
+def parse_json(llm_response_str: str, key : str):
     """
     Parses the LLM response string to find a JSON block and extract the 'function_name'.
     """
@@ -64,8 +98,8 @@ def parse_function_name(llm_response_str: str):
         # Parse the extracted JSON string
         parsed_json = json.loads(json_str_to_parse)
 
-        function_name = parsed_json.get("function_name")
-        return function_name
+        value_parsed = parsed_json.get(key)
+        return value_parsed
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}. Problematic string: '{json_str_to_parse}'")
@@ -81,25 +115,37 @@ def returnFunctionCall(list_of_functions, prompt):
     '''
 
     suitable_prompt = fr'''
-Based on the user's prompt:
+You are an intelligent assistant that helps a user by selecting the appropriate function to call based on their request.
+Your ONLY output MUST be a single, valid JSON object. Do NOT include any other text, explanations, apologies, or introductory phrases before or after the JSON object.
 
-{prompt}
-Choose the best function that first the user needs. Answer in a JSON format with the following structure:
+The JSON object must have exactly one key: "function_name".
+If the function requires arguments, the JSON object must also include an "arguments" key, which itself is an object containing the parameters.
+If no function is suitable or the request is ambiguous, you MUST select "unknown_action".
 
-{{
-    "function_name":{{}}
-}}
-
-Possible function calls are:
-
+Here is the list of available functions and their descriptions:
 {list_of_functions}
+
+The user prompt is:
+{prompt}
+
+---
+Here are some examples of user prompts and the corresponding desired JSON output:
+
+User Prompt: "Show me the picture I was looking at before this one."
+Desired JSON Output:
+```json
+{{
+    "function_name": "load_previous_image"
+}}
 
 '''
     LLM_repoonse = LLM_request(suitable_prompt)
 
     ## parsing function name
-    function_name = parse_function_name(LLM_repoonse)
+    function_name = parse_json(LLM_repoonse)
     print(function_name)
 
     return function_name
 # %%
+translate_to_english("Mostre-me a figura que eu estava olhando antes dessa.")
+# %%)
