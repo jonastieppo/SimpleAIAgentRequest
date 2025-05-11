@@ -5,8 +5,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import requests
 import io
-from AI_parser import returnFunctionCall # LLM_request is used by returnFunctionCall internally
-from googletrans import Translator, LANGUAGES # Import Translator
+from AI_parser import returnFunctionCall, translate_to_english # LLM_request is used by returnFunctionCall internally
 
 class ImageBrowserApp:
     def __init__(self, root):
@@ -21,9 +20,6 @@ class ImageBrowserApp:
 
         # User prompts storage
         self.user_prompts = []
-
-        # Initialize the translator
-        self.translator = Translator()
 
         # --- Central Image Widget ---
         # Create a frame for the image to help with centering and padding
@@ -136,7 +132,7 @@ class ImageBrowserApp:
             self.prev_button.config(state=tk.NORMAL)
         self.next_button.config(state=tk.NORMAL)
 
-    async def _translate_to_english(self, text_to_translate: str) -> str:
+    def _translate_to_english(self, text_to_translate: str) -> str:
         """Translates the given text to English using googletrans."""
         if not text_to_translate:
             return ""
@@ -144,9 +140,7 @@ class ImageBrowserApp:
             print(f"Attempting to translate: '{text_to_translate}'")
             # Detect language and translate to English
             # You can also specify src language if you know it, e.g., translator.translate(text_to_translate, src='pt', dest='en')
-            translation = await self.translator.translate(text_to_translate, dest='en', src='pt')
-            print(f"Translation result: {translation.text}")
-            translated_text = translation.text
+            translated_text = translate_to_english(text_to_translate)
             print(f"Translated to English: '{translated_text}'")
             return translated_text
         except Exception as e:
