@@ -1,4 +1,5 @@
 # %%
+import asyncio
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -135,7 +136,7 @@ class ImageBrowserApp:
             self.prev_button.config(state=tk.NORMAL)
         self.next_button.config(state=tk.NORMAL)
 
-    def _translate_to_english(self, text_to_translate: str) -> str:
+    async def _translate_to_english(self, text_to_translate: str) -> str:
         """Translates the given text to English using googletrans."""
         if not text_to_translate:
             return ""
@@ -143,10 +144,9 @@ class ImageBrowserApp:
             print(f"Attempting to translate: '{text_to_translate}'")
             # Detect language and translate to English
             # You can also specify src language if you know it, e.g., translator.translate(text_to_translate, src='pt', dest='en')
-            translation = self.translator.translate(text_to_translate, dest='en')
+            translation = await self.translator.translate(text_to_translate, dest='en', src='pt')
+            print(f"Translation result: {translation.text}")
             translated_text = translation.text
-            detected_lang = LANGUAGES.get(translation.src, translation.src) # Get full language name
-            print(f"Detected source language: {detected_lang} ('{translation.src}')")
             print(f"Translated to English: '{translated_text}'")
             return translated_text
         except Exception as e:
@@ -158,7 +158,7 @@ class ImageBrowserApp:
         """Handles the submission of text from the prompt_entry widget."""
         prompt_text = self.prompt_entry.get().strip()
         if prompt_text:
-            prompt_text_english = self._translate_to_english(prompt_text)
+            prompt_text_english = asyncio.create_task(self._translate_to_english(prompt_text))
             function_name = returnFunctionCall(["load_next_image", "load_previous_image"], prompt_text_english)
 
             self.user_prompts.append(prompt_text) # Store original prompt
