@@ -52,7 +52,7 @@ class ImageBrowserApp:
         # Load the initial image (AFTER all UI elements are defined and packed)
         self.load_next_image()
 
-    def fetch_image_from_url(self, url="https://picsum.photos/200/200"):
+    def fetch_image_from_url(self, url="https://picsum.photos/400/400"):
         """Fetches an image from the given URL or a new random one."""
         try:
             headers = {'Cache-Control': 'no-cache'}
@@ -74,7 +74,7 @@ class ImageBrowserApp:
         if image_data:
             try:
                 pil_image = Image.open(io.BytesIO(image_data))
-                pil_image = pil_image.resize((200, 200), Image.Resampling.LANCZOS)
+                pil_image = pil_image.resize((400, 400), Image.Resampling.LANCZOS)
                 tk_image = ImageTk.PhotoImage(pil_image)
 
                 self.image_label.config(image=tk_image, text="") # Clear any previous text
