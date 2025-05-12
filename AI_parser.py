@@ -142,7 +142,7 @@ Desired JSON Output:
     LLM_repoonse = LLM_request(suitable_prompt)
 
     ## parsing function name
-    function_name = parse_json(LLM_repoonse)
+    function_name = parse_json(LLM_repoonse, "function_name")
     print(function_name)
 
     return function_name

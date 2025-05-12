@@ -1,5 +1,4 @@
 # %%
-import asyncio
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -152,7 +151,7 @@ class ImageBrowserApp:
         """Handles the submission of text from the prompt_entry widget."""
         prompt_text = self.prompt_entry.get().strip()
         if prompt_text:
-            prompt_text_english = asyncio.create_task(self._translate_to_english(prompt_text))
+            prompt_text_english = self._translate_to_english(prompt_text)
             function_name = returnFunctionCall(["load_next_image", "load_previous_image"], prompt_text_english)
 
             self.user_prompts.append(prompt_text) # Store original prompt
